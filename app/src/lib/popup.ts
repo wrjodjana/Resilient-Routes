@@ -1,5 +1,5 @@
 export class CustomPopup {
-  private overlay: google.maps.OverlayView;
+  private overlay!: google.maps.OverlayView;
   private position: google.maps.LatLng;
   private container: HTMLDivElement | null = null;
   private content: string;

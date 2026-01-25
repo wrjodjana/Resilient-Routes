@@ -1,8 +1,8 @@
-import { EarthquakeElements } from "../types";
+import { EarthquakeElements, ShakemapData } from "../types";
 
 const PYTHON_API = "http://localhost:8000";
 
-export const fetch_shakemap = async (earthquake: EarthquakeElements) => {
+export const fetch_shakemap = async (earthquake: EarthquakeElements): Promise<ShakemapData | null> => {
   const event_id = earthquake.id;
 
   try {
@@ -18,7 +18,7 @@ export const fetch_shakemap = async (earthquake: EarthquakeElements) => {
 
     return {
       id: event_id,
-      magnitude: earthquake.properties.mag,
+      actual_magnitude: earthquake.properties.mag,
       location: earthquake.properties.place,
       time: earthquake.properties.time,
       depth: earthquake.geometry.coordinates[2],

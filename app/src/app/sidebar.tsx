@@ -7,7 +7,7 @@ import { fetch_roads, fetch_intersections } from "@/lib/network/osm";
 import { RenderRoads } from "@/lib/network/roads";
 import { RenderBridges } from "@/lib/network/bridges";
 import { RenderEarthquakes } from "@/lib/network/earthquakes";
-import { MapProps, ShakemapData } from "@/lib/types";
+import { MapProps, ShakemapData, EarthquakeElements } from "@/lib/types";
 import { fetch_shakemap } from "@/lib/network/shakemap";
 import Legend from "./legend";
 
@@ -116,11 +116,17 @@ export default function Sidebar({ map }: MapProps) {
         earthquake_renderer_ref.current = new RenderEarthquakes(map);
       }
 
-      const earthquake = await earthquake_renderer_ref.current.get_earthquakes(selected_coords);
-      console.log(earthquake);
-      const shakemap = await fetch_shakemap(earthquake);
-      console.log(shakemap);
-      set_shakemap_data(shakemap);
+      const earthquakes = await earthquake_renderer_ref.current.get_earthquakes(selected_coords);
+      console.log(earthquakes);
+      
+      if (earthquakes && Array.isArray(earthquakes) && earthquakes.length > 0) {
+        const earthquake: EarthquakeElements = earthquakes[0];
+        const shakemap = await fetch_shakemap(earthquake);
+        console.log(shakemap);
+        set_shakemap_data(shakemap);
+      } else {
+        console.log("No earthquakes found");
+      }
     } catch {
       console.error("Failed to load earthquakes.");
     }
