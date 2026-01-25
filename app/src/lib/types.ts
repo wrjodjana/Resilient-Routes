@@ -36,6 +36,10 @@ export interface Intersection {
   lon: number;
 }
 
+export interface Intersections {
+  elements: Intersection[];
+}
+
 export interface Bridge {
   lat: number;
   lng: number;
