@@ -1,5 +1,7 @@
 import { RoadElements, Intersection } from "../types";
 import { CustomPopup } from "../popup";
+import type { Map, Polyline, Marker, LatLngExpression } from "leaflet";
+import { getLeaflet } from "../leaflet_map";
 
 const ROAD_STYLES: Record<string, { color: string; weight: number; opacity: number; zIndex: number }> = {
   motorway: { color: "#d73027", weight: 5, opacity: 1, zIndex: 100 },
@@ -25,14 +27,14 @@ const DEFAULT_STYLE = {
 };
 
 export class RenderRoads {
-  private map: google.maps.Map;
-  private polylines: google.maps.Polyline[] = [];
-  private intersection_markers: google.maps.Marker[] = [];
+  private map: Map;
+  private polylines: Polyline[] = [];
+  private intersection_markers: Marker[] = [];
   private current_popup: CustomPopup | null = null;
   private roads_data: RoadElements[] = [];
   private is_monochrome: boolean = false;
 
-  constructor(map: google.maps.Map) {
+  constructor(map: Map) {
     this.map = map;
   }
 
@@ -47,25 +49,20 @@ export class RenderRoads {
         const style = ROAD_STYLES[highway_type] || DEFAULT_STYLE;
         const color = this.is_monochrome ? "#666666" : style.color;
 
-        const path = road.geometry.map((point) => ({
-          lat: point.lat,
-          lng: point.lon,
-        }));
+        const path: LatLngExpression[] = road.geometry.map((point) => [point.lat, point.lon]);
 
-        const polyline = new google.maps.Polyline({
-          path: path,
-          geodesic: true,
-          strokeColor: color,
-          strokeOpacity: style.opacity,
-          strokeWeight: style.weight,
-          zIndex: style.zIndex,
-          clickable: true,
-          map: this.map,
-        });
+        const L = getLeaflet();
+        if (!L) return;
 
-        google.maps.event.addListener(polyline, "click", (event: google.maps.MapMouseEvent) => {
+        const polyline = L.polyline(path, {
+          color: color,
+          opacity: style.opacity,
+          weight: style.weight,
+        }).addTo(this.map);
+
+        polyline.on("click", (e) => {
           if (this.current_popup) {
-            this.current_popup.setMap(null);
+            this.current_popup.remove();
           }
 
           const roadName = road.tags?.name || "Unnamed Road";
@@ -80,10 +77,9 @@ export class RenderRoads {
             </div>
           `;
 
-          if (event.latLng) {
-            this.current_popup = new CustomPopup(event.latLng, content);
-            this.current_popup.setMap(this.map);
-          }
+          this.current_popup = new CustomPopup(e.latlng, content);
+          this.current_popup.setMap(this.map);
+          this.current_popup.show();
         });
 
         this.polylines.push(polyline);
@@ -95,22 +91,21 @@ export class RenderRoads {
     this.clear_intersections();
 
     intersections.forEach((node) => {
-      const marker = new google.maps.Marker({
-        position: { lat: node.lat, lng: node.lon },
-        map: this.map,
-        icon: {
-          path: google.maps.SymbolPath.CIRCLE,
-          scale: 7,
-          fillColor: "#90EE90",
-          fillOpacity: 1,
-          strokeColor: "#000000",
-          strokeWeight: 2,
-        },
-      });
+      const L = getLeaflet();
+      if (!L) return;
 
-      marker.addListener("click", () => {
+      const marker = L.marker([node.lat, node.lon], {
+        icon: L.divIcon({
+          className: "intersection-marker",
+          html: '<div style="width: 14px; height: 14px; border-radius: 50%; background-color: #90EE90; border: 2px solid #000000;"></div>',
+          iconSize: [14, 14],
+          iconAnchor: [7, 7],
+        }),
+      }).addTo(this.map);
+
+      marker.on("click", () => {
         if (this.current_popup) {
-          this.current_popup.setMap(null);
+          this.current_popup.remove();
         }
 
         const content = `
@@ -120,9 +115,9 @@ export class RenderRoads {
           </div>
         `;
 
-        const position = new google.maps.LatLng(node.lat, node.lon);
-        this.current_popup = new CustomPopup(position, content);
+        this.current_popup = new CustomPopup([node.lat, node.lon], content);
         this.current_popup.setMap(this.map);
+        this.current_popup.show();
       });
 
       this.intersection_markers.push(marker);
@@ -137,16 +132,16 @@ export class RenderRoads {
   }
 
   clear_intersections() {
-    this.intersection_markers.forEach((marker) => marker.setMap(null));
+    this.intersection_markers.forEach((marker) => this.map.removeLayer(marker));
     this.intersection_markers = [];
   }
 
   clear_roads() {
-    this.polylines.forEach((polyline) => polyline.setMap(null));
+    this.polylines.forEach((polyline) => this.map.removeLayer(polyline));
     this.polylines = [];
 
     if (this.current_popup) {
-      this.current_popup.setMap(null);
+      this.current_popup.remove();
       this.current_popup = null;
     }
   }

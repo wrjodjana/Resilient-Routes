@@ -1,5 +1,7 @@
 import { Coordinates } from "../types";
 import { CustomPopup } from "../popup";
+import type { Map, Marker } from "leaflet";
+import { getLeaflet } from "../leaflet_map";
 
 const PYTHON_API = "http://localhost:8000";
 
@@ -12,12 +14,12 @@ interface BridgeData {
 }
 
 export class RenderBridges {
-  private map: google.maps.Map;
-  private markers: google.maps.Marker[] = [];
+  private map: Map;
+  private markers: Marker[] = [];
   private bridges_data: BridgeData[] = [];
   private currentPopup: CustomPopup | null = null;
 
-  constructor(map: google.maps.Map) {
+  constructor(map: Map) {
     this.map = map;
   }
 
@@ -42,22 +44,21 @@ export class RenderBridges {
       this.bridges_data = bridges;
 
       bridges.forEach((bridge: BridgeData) => {
-        const marker = new google.maps.Marker({
-          position: { lat: bridge.LATITUDE, lng: bridge.LONGITUDE },
-          map: this.map,
-          icon: {
-            path: "M 0,-5 L 5,0 L 0,5 L -5,0 Z",
-            strokeColor: "#000000",
-            strokeWeight: 2,
-            fillColor: "#964B00",
-            fillOpacity: 1,
-            scale: 2,
-          },
-        });
+        const L = getLeaflet();
+        if (!L) return;
 
-        marker.addListener("click", () => {
+        const marker = L.marker([bridge.LATITUDE, bridge.LONGITUDE], {
+          icon: L.divIcon({
+            className: "bridge-marker",
+            html: '<div style="width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-bottom: 20px solid #964B00; border-top: 0; position: relative;"><div style="width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 16px solid #000000; position: absolute; top: 4px; left: -8px;"></div></div>',
+            iconSize: [20, 20],
+            iconAnchor: [10, 20],
+          }),
+        }).addTo(this.map);
+
+        marker.on("click", () => {
           if (this.currentPopup) {
-            this.currentPopup.setMap(null);
+            this.currentPopup.remove();
           }
 
           const content = `
@@ -67,15 +68,14 @@ export class RenderBridges {
             </div>
           `;
 
-          const position = new google.maps.LatLng(bridge.LATITUDE, bridge.LONGITUDE);
-          this.currentPopup = new CustomPopup(position, content);
+          this.currentPopup = new CustomPopup([bridge.LATITUDE, bridge.LONGITUDE], content);
           this.currentPopup.setMap(this.map);
+          this.currentPopup.show();
         });
 
         this.markers.push(marker);
       });
     } catch (error) {
-      console.error("Failed to load bridges:", error);
       throw error;
     }
   }
@@ -85,11 +85,11 @@ export class RenderBridges {
   }
 
   clear_bridges() {
-    this.markers.forEach((marker) => marker.setMap(null));
+    this.markers.forEach((marker) => this.map.removeLayer(marker));
     this.markers = [];
 
     if (this.currentPopup) {
-      this.currentPopup.setMap(null);
+      this.currentPopup.remove();
       this.currentPopup = null;
     }
   }

@@ -52,7 +52,6 @@ const fetch_osm_data = async (query: string): Promise<OSMResponse> => {
       throw new Error("Failed to fetch data from OSM API");
     }
   } catch (error) {
-    console.log("Failed to fetch data from OSM API.");
     throw error;
   }
 };

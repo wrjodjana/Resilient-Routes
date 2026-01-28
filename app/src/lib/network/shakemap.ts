@@ -9,7 +9,6 @@ export const fetch_shakemap = async (earthquake: EarthquakeElements): Promise<Sh
     const response = await fetch(`${PYTHON_API}/api/shakemap?event_id=${event_id}`);
 
     if (!response.ok) {
-      console.log("No shakemap data found for this earthquake");
       return null;
     }
 
@@ -69,7 +68,6 @@ export const fetch_shakemap = async (earthquake: EarthquakeElements): Promise<Sh
       },
     };
   } catch (error) {
-    console.error("Failed to fetch shakemap data:", error);
     return null;
   }
 };

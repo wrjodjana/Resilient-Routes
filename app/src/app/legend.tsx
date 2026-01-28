@@ -20,24 +20,26 @@ export default function Legend({ show }: LegendProps) {
       style={{
         position: "absolute",
         bottom: "60px",
-        left: "350px",
+        left: "340px",
         backgroundColor: "white",
-        padding: "10px",
-        borderRadius: "4px",
-        boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+        padding: "12px 16px",
+        borderRadius: "8px",
+        boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
         zIndex: 1000,
-        fontSize: "12px",
+        fontSize: "13px",
+        minWidth: "200px",
       }}
     >
-      <div style={{ color: "black", fontWeight: "600", marginBottom: "8px" }}>Roads</div>
+      <div style={{ color: "#111827", fontWeight: "600", marginBottom: "10px", fontSize: "14px" }}>Road Types</div>
       {roads.map((road) => (
-        <div key={road.type} style={{ color: "black", display: "flex", alignItems: "center", marginBottom: "4px" }}>
+        <div key={road.type} style={{ color: "#374151", display: "flex", alignItems: "center", marginBottom: "6px" }}>
           <div
             style={{
-              width: "20px",
-              height: "3px",
+              width: "24px",
+              height: "4px",
               backgroundColor: road.color,
-              marginRight: "8px",
+              marginRight: "10px",
+              borderRadius: "2px",
             }}
           />
           <span>{road.type}</span>

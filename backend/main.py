@@ -18,13 +18,12 @@ app = FastAPI()
 
 app.add_middleware(
   CORSMiddleware,
-  allow_origins=["http://localhost:3000"],
+  allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
   allow_credentials=True,
   allow_methods=["*"],
   allow_headers=["*"],
 )
 
-# Thread pool for Playwright
 executor = ThreadPoolExecutor(max_workers=3)
 
 USGS_API = "https://earthquake.usgs.gov/fdsnws/event/1/query"
@@ -52,6 +51,10 @@ async def fetch_earthquakes(coords: Coordinates):
       raise HTTPException(status_code=500, detail="Failed to fetch nearest earthquakes")
 
     data = resp.json()
+    
+    if not data.get('features') or len(data['features']) == 0:
+      raise HTTPException(status_code=404, detail="No earthquakes found matching criteria (magnitude >= 4.5, within 100km, with shakemap data since 2010)")
+    
     return data['features'][0]
 
 def fetch_shakemap_sync(event_id: str):
@@ -85,11 +88,9 @@ def fetch_shakemap_sync(event_id: str):
 
 @app.get("/api/shakemap")
 async def fetch_shakemap(event_id: str):
-  # Run sync Playwright in thread pool
   loop = asyncio.get_event_loop()
   shakemap_url = await loop.run_in_executor(executor, fetch_shakemap_sync, event_id)
   
-  # Fetch the JSON data using httpx
   async with httpx.AsyncClient(timeout=30.0) as client:
     resp = await client.get(shakemap_url)
 
@@ -120,12 +121,11 @@ async def calc_prob_failures(payload: dict):
 
     eq_lat, eq_lon = float(shakemap_data["latitude"]), float(shakemap_data["longitude"])
     eq_depth = float(shakemap_data["depth"])
-    actual_magnitude = float(shakemap_data["magnitude"])
+    actual_magnitude = float(shakemap_data["actual_magnitude"])
     vs30 = float(shakemap_data["vs30"])
 
     magnitude = target_magnitude if target_magnitude else actual_magnitude
 
-    # GMPE Parameters (depth to 1,500 m/s, strike-slip/normal faults, regional q value: California)
     Bdepth = 0.75
     F = 1.0
     Q_0 = 150

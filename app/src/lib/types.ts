@@ -1,5 +1,7 @@
+import type { Map } from "leaflet";
+
 export interface MapProps {
-  map: google.maps.Map | null;
+  map: Map | null;
 }
 
 export interface LegendProps {
