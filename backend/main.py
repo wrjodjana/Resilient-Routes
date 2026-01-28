@@ -1,5 +1,6 @@
 import sys
 from concurrent.futures import ThreadPoolExecutor
+import os
 
 from classes import Coordinates
 from func import cal_GK15
@@ -16,9 +17,17 @@ import asyncio
 
 app = FastAPI()
 
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
+ALLOWED_ORIGINS = [origin.strip() for origin in os.getenv("ALLOWED_ORIGINS", "").split(",") if origin.strip()]
+
 app.add_middleware(
   CORSMiddleware,
-  allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+  allow_origins=[
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    FRONTEND_URL,
+    *ALLOWED_ORIGINS
+  ],
   allow_credentials=True,
   allow_methods=["*"],
   allow_headers=["*"],

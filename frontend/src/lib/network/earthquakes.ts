@@ -1,7 +1,7 @@
 import { Coordinates, EarthquakeElements } from "../types";
 import type { Map } from "leaflet";
 
-const PYTHON_API = "http://localhost:8000";
+const PYTHON_API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export class RenderEarthquakes {
   private map: Map;

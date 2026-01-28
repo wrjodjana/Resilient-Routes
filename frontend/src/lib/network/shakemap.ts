@@ -1,6 +1,6 @@
 import { EarthquakeElements, ShakemapData } from "../types";
 
-const PYTHON_API = "http://localhost:8000";
+const PYTHON_API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export const fetch_shakemap = async (earthquake: EarthquakeElements): Promise<ShakemapData | null> => {
   const event_id = earthquake.id;

@@ -119,7 +119,8 @@ export default function Sidebar({ map }: MapProps) {
       if (target_magnitude !== null) {
         payload.target_magnitude = target_magnitude;
       }
-      const failures_response = await fetch(`http://localhost:8000/api/bridge_failures`, {
+      const api_url = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const failures_response = await fetch(`${api_url}/api/bridge_failures`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

@@ -3,7 +3,7 @@ import { CustomPopup } from "../popup";
 import type { Map, Marker } from "leaflet";
 import { getLeaflet } from "../leaflet_map";
 
-const PYTHON_API = "http://localhost:8000";
+const PYTHON_API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 interface BridgeData {
   LATITUDE: number;
