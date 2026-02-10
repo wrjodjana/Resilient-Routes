@@ -1,6 +1,6 @@
 # Resilient Routes
 
-A web-based platform for seismic reliability assessment of transportation networks in the United States. Resilient Routes enables interactive selection of infrastructure components (bridges, roads) and execution of custom earthquake scenarios to calculate bridge failure probabilities. Feel free to read more [here](https://arxiv.org/pdf/2210.06404).
+A web-based platform for seismic reliability assessment of transportation networks in the United States. The application enables interactive selection of infrastructure components (bridges, roads) and execution of custom earthquake scenarios to calculate bridge failure probabilities. Feel free to read more [here](https://arxiv.org/pdf/2210.06404).
 
 ## Getting Started
 
