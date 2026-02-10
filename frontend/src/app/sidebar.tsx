@@ -341,7 +341,7 @@ export default function Sidebar({ map }: MapProps) {
 
       {error && (
         <div style={errorStyle}>
-          <span>⚠️</span>
+          <span style={{ fontWeight: "600" }}>!</span>
           <span>{error}</span>
         </div>
       )}
@@ -349,11 +349,11 @@ export default function Sidebar({ map }: MapProps) {
       <div style={sectionStyle}>
         <div style={sectionTitleStyle}>Step 1: Select Area</div>
         <Button onClick={handle_select_location} variant="primary">
-          📍 Select Location
+          Select Location
         </Button>
         {selected_coords && (
           <div style={statusSuccessStyle}>
-            <span>✓</span>
+            <span style={{ fontWeight: "700", fontSize: "14px", marginRight: "4px" }}>•</span>
             <span>Area selected</span>
           </div>
         )}
@@ -362,17 +362,17 @@ export default function Sidebar({ map }: MapProps) {
       <div style={sectionStyle}>
         <div style={sectionTitleStyle}>Step 2: Load Data</div>
         <Button onClick={display_roads} isLoading={loading === "roads"} disabled={!selected_coords}>
-          🛣️ Load Roads
+          Load Roads
         </Button>
         <Button onClick={display_bridges} isLoading={loading === "bridges"} disabled={!selected_coords}>
-          🌉 Load Bridges
+          Load Bridges
         </Button>
         <Button onClick={display_earthquakes} isLoading={loading === "earthquakes"} disabled={!selected_coords}>
-          🌍 Load Earthquake
+          Load Earthquake
         </Button>
         {show_road_legend && (
           <Button onClick={handle_toggle_monochrome} variant="default">
-            🎨 Toggle Monochrome
+            Toggle Monochrome
           </Button>
         )}
       </div>
@@ -414,7 +414,7 @@ export default function Sidebar({ map }: MapProps) {
           max="10"
         />
         <Button onClick={display_bridge_failures} isLoading={loading === "failures"} disabled={!shakemap_data}>
-          ⚠️ Calculate Bridge Failures
+          Calculate Bridge Failures
         </Button>
       </div>
 
