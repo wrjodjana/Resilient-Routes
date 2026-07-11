@@ -1,27 +1,38 @@
- See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# Claude Code / AI tooling
+.claude/
+CLAUDE.md
+CLAUDE.local.md
+**/CLAUDE.md
+.interface-design/
 
 # dependencies
-app/node_modules
+node_modules/
 .pnp
 .pnp.js
 
-# testing
-/coverage
-
-# production
+# builds / output
 /build
+/coverage
+.next/
 
-# misc
-.DS_Store
-.env.local
+# python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# env files
+.env
+.env*.local
 .env.development.local
 .env.test.local
 .env.production.local
 
+# misc
+.DS_Store
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-node_modules
-
-env
-.env*

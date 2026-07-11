@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import "leaflet/dist/leaflet.css";
+import "leaflet-draw/dist/leaflet.draw.css";
 import "../styles/globals.css";
 
 export const metadata: Metadata = {
-  title: "Resilient Routes — post-earthquake connectivity",
-  description: "Seismic reliability of transportation networks: which locations stay connected to the critical destination after an earthquake.",
+  title: "resilient routes",
+  description: "",
 };
 
 export default function RootLayout({
