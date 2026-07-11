@@ -2,8 +2,8 @@ import sys
 from concurrent.futures import ThreadPoolExecutor
 import os
 
-from classes import Coordinates
-from func import cal_GK15
+from archived_2.backend.classes import Coordinates
+from archived_2.backend.func import cal_GK15
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from playwright.sync_api import sync_playwright

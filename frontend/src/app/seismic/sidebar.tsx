@@ -40,28 +40,36 @@ export default function Sidebar({ size, graph, loading, error, onSizeChange }: S
 
   return (
     <aside className="flex flex-col gap-4 rounded-2xl border border-slate-900/[0.07] bg-white p-4 text-slate-800 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_30px_rgba(15,23,42,0.08)]">
-      <Link
-        href="/"
-        className="inline-flex w-fit items-center gap-1 text-[11px] font-medium text-slate-400 transition-colors hover:text-slate-600"
-      >
+      <Link href="/" className="inline-flex w-fit items-center gap-1 text-[11px] font-medium text-slate-400 transition-colors hover:text-slate-600">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <path d="M19 12H5M11 6l-6 6 6 6" />
         </svg>
         All studies
       </Link>
-      <div className="flex items-center gap-2.5">
-        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-50 text-teal-700">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <div className="flex flex-col gap-1">
+        <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-teal-700">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <circle cx="6" cy="6" r="2.5" />
             <circle cx="18" cy="8" r="2.5" />
             <circle cx="9" cy="18" r="2.5" />
             <path d="M8 7l8 1M8 8l0 8M17 10l-7 7" />
           </svg>
+          Seismic Reliability
         </span>
-        <div className="leading-tight">
-          <h1 className="text-sm font-semibold tracking-tight">Resilient Routes</h1>
-          <p className="text-[11px] text-slate-400">Post-earthquake connectivity</p>
-        </div>
+        <h1 className="text-[13.5px] font-semibold leading-[1.3] tracking-tight text-slate-900 text-balance">
+          Graph Neural Networks for Highway Bridge Systems
+        </h1>
+        <a
+          href="https://arxiv.org/abs/2210.06404"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-0.5 inline-flex w-fit items-center gap-1 text-[11px] font-medium text-slate-400 transition-colors hover:text-teal-700"
+        >
+          Read the paper
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M7 17L17 7M7 7h10v10" />
+          </svg>
+        </a>
       </div>
 
       <div className="flex gap-1 rounded-xl bg-slate-100 p-1">
@@ -69,11 +77,7 @@ export default function Sidebar({ size, graph, loading, error, onSizeChange }: S
           <button
             key={option.value}
             onClick={() => onSizeChange(option.value)}
-            className={`flex-1 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
-              size === option.value
-                ? "bg-white text-teal-700 shadow-[0_1px_2px_rgba(15,23,42,0.1)]"
-                : "text-slate-500 hover:text-slate-700"
-            }`}
+            className={`flex-1 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${size === option.value ? "bg-white text-teal-700 shadow-[0_1px_2px_rgba(15,23,42,0.1)]" : "text-slate-500 hover:text-slate-700"}`}
           >
             {option.label}
           </button>
@@ -105,17 +109,9 @@ export default function Sidebar({ size, graph, loading, error, onSizeChange }: S
           <div className="flex flex-col gap-1.5">
             <h2 className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Connectivity reliability</h2>
             <div className="relative mt-1">
-              <div
-                className="h-2 w-full rounded-full"
-                style={{ background: "linear-gradient(to right, #dc2626, #f59e0b 55%, #0d9488)" }}
-              />
-              <div
-                className="absolute -top-0.5 -bottom-0.5 w-0.5 rounded bg-slate-900"
-                style={{ left: `${thresholdPct}%` }}
-              >
-                <span className="absolute -top-4 left-1/2 -translate-x-1/2 text-[9px] font-semibold tabular-nums text-slate-600">
-                  {graph.threshold.toFixed(2)}
-                </span>
+              <div className="h-2 w-full rounded-full" style={{ background: "linear-gradient(to right, #dc2626, #f59e0b 55%, #0d9488)" }} />
+              <div className="absolute -top-0.5 -bottom-0.5 w-0.5 rounded bg-slate-900" style={{ left: `${thresholdPct}%` }}>
+                <span className="absolute -top-4 left-1/2 -translate-x-1/2 text-[9px] font-semibold tabular-nums text-slate-600">{graph.threshold.toFixed(2)}</span>
               </div>
             </div>
             <div className="flex justify-between text-[10px] font-medium text-slate-500">
@@ -123,10 +119,7 @@ export default function Sidebar({ size, graph, loading, error, onSizeChange }: S
               <span>Stays connected</span>
             </div>
             <div className="mt-1.5 flex items-center gap-2">
-              <span
-                className="inline-block h-3 w-3 rounded-full bg-indigo-600"
-                style={{ boxShadow: "0 0 0 2px #fff, 0 0 0 3.5px #4f46e5" }}
-              />
+              <span className="inline-block h-3 w-3 rounded-full bg-indigo-600" style={{ boxShadow: "0 0 0 2px #fff, 0 0 0 3.5px #4f46e5" }} />
               <span className="text-[10.5px] text-slate-500">Critical destination</span>
             </div>
           </div>

@@ -6,12 +6,9 @@ type LeafletModule = typeof Leaflet;
 const EDGE_COLOR = "rgba(71, 85, 105, 0.35)";
 const DEST_COLOR = "#4f46e5";
 
-// Reliability risk ramp, anchored at the model's risk threshold.
-// Below the threshold a node is likely cut off from the destination (warm);
-// at/above it holds (teal). red -> amber -> teal.
-const RISK_LOW = [220, 38, 38]; // #dc2626 — likely cut off
-const RISK_MID = [245, 158, 11]; // #f59e0b — borderline (at threshold)
-const RISK_HIGH = [13, 148, 136]; // #0d9488 — reliably connected
+const RISK_LOW = [220, 38, 38];
+const RISK_MID = [245, 158, 11];
+const RISK_HIGH = [13, 148, 136];
 
 export const getLeaflet = async () => {
   if (typeof window === "undefined") {
@@ -27,8 +24,6 @@ function mix(a: number[], b: number[], t: number): string {
   return `rgb(${r}, ${g}, ${bl})`;
 }
 
-// Map a reliability value to the risk ramp. The threshold sits at the amber
-// pivot: warmer below it (at risk), cooler above it (resilient).
 export function valueToColor(value: number, threshold = 0.75): string {
   const v = Math.min(1, Math.max(0, value));
   const t = Math.min(1, Math.max(0.01, threshold));
@@ -36,12 +31,7 @@ export function valueToColor(value: number, threshold = 0.75): string {
   return mix(RISK_MID, RISK_HIGH, (v - t) / (1 - t));
 }
 
-// Synchronous once Leaflet is loaded: the caller passes L so there is no `await`
-// between the "already initialized?" guard and L.map(), which is what lets React's
-// double-invoked effect (StrictMode / Fast Refresh) init the same container twice.
 export function initMap(L: LeafletModule, container: HTMLElement): LeafletMap | null {
-  // Container still owns a Leaflet instance from a prior mount — bail rather than
-  // throw "Map container is already initialized".
   if ((container as unknown as { _leaflet_id?: number })._leaflet_id != null) return null;
 
   const map = L.map(container, { center: [37.4, -122.03], zoom: 12, zoomControl: false });
@@ -80,8 +70,6 @@ export async function renderGraph(map: LeafletMap, layerGroup: LayerGroup, graph
 
   for (const node of graph.nodes) {
     if (node.is_target) {
-      // Destination beacon: a faint outer ring behind a solid indigo core so it
-      // reads as "the goal" without colliding with the red = at-risk ramp.
       L.circleMarker([node.lat, node.lon], {
         radius: 13,
         color: DEST_COLOR,

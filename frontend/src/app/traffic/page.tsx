@@ -34,9 +34,19 @@ export default function Traffic() {
           A heterogeneous graph neural network that predicts traffic flow across road networks. This study is in development — it will land here alongside the seismic model.
         </p>
 
-        <p className="mt-8 border-t border-slate-900/[0.05] pt-5 text-xs leading-relaxed text-slate-400">
-          End-to-End Heterogeneous Graph Neural Networks for Traffic Assignment
-        </p>
+        <div className="mt-8 border-t border-slate-900/[0.05] pt-5">
+          <a
+            href="https://arxiv.org/abs/2310.13193"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex w-fit items-start gap-1.5 text-xs leading-relaxed text-slate-400 transition-colors hover:text-teal-700"
+          >
+            <span>End-to-End Heterogeneous Graph Neural Networks for Traffic Assignment</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="mt-0.5 shrink-0">
+              <path d="M7 17L17 7M7 7h10v10" />
+            </svg>
+          </a>
+        </div>
       </div>
     </main>
   );

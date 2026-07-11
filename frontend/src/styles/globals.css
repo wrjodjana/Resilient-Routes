@@ -19,18 +19,15 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* Map canvas: muted grey background so there is no flash while tiles load. */
 .leaflet-container {
   background: #d5d9df;
   font-family: var(--font-sans);
 }
 
-/* Dim the pale basemap into a calm, muted grey. */
 .leaflet-tile {
   filter: brightness(0.86) contrast(1.05);
 }
 
-/* Rounded, soft zoom control to match the clean panel styling. */
 .leaflet-control-zoom {
   border: none !important;
   border-radius: 12px !important;
@@ -57,7 +54,6 @@ body {
   border-bottom: 1px solid #e2e8f0 !important;
 }
 
-/* Softer popups. */
 .leaflet-popup-content-wrapper {
   border-radius: 12px;
   box-shadow: 0 8px 30px rgba(15, 23, 42, 0.12);
@@ -69,7 +65,6 @@ body {
   color: #334155;
 }
 
-/* Quieter attribution. */
 .leaflet-control-attribution {
   background: rgba(255, 255, 255, 0.7) !important;
   border-radius: 8px 0 0 0;

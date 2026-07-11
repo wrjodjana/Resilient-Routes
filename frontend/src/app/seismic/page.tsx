@@ -22,9 +22,6 @@ export default function Home() {
   useEffect(() => {
     let cancelled = false;
 
-    // Load Leaflet first, then guard + create synchronously — no await between the
-    // "already initialized?" check and L.map(), so a double-invoked effect can't
-    // init the same container twice.
     getLeaflet().then((L) => {
       const container = containerRef.current;
       if (!L || cancelled || !container || mapRef.current) return;
