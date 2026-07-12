@@ -5,7 +5,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
@@ -26,7 +26,7 @@ app.add_middleware(
   allow_headers=["*"],
 )
 
-DATASETS_DIR = Path(__file__).parent / "datasets"
+SEISMIC_DIR = Path(__file__).parent / "seismic"
 
 GraphSize = Literal["small", "middle", "large"]
 
@@ -34,7 +34,7 @@ TARGET_NODE_ID = 17
 
 @lru_cache(maxsize=3)
 def load_graph(size: str) -> dict:
-  graph_dir = DATASETS_DIR / f"connectivity_graph_{size}"
+  graph_dir = SEISMIC_DIR / f"connectivity_graph_{size}"
 
   with open(graph_dir / "graph_info.pickle", "rb") as f:
     graph_info = pickle.load(f)
@@ -75,6 +75,93 @@ def load_graph(size: str) -> dict:
 @app.get("/api/graph/{size}")
 async def fetch_graph(size: GraphSize):
   return load_graph(size)
+
+TRAFFIC_DIR = Path(__file__).parent / "traffic"
+
+TrafficCity = Literal["anaheim", "siouxfalls"]
+
+TRAFFIC_DIRS = {"anaheim": "sta_anaheim", "siouxfalls": "sta_siouxfalls"}
+
+CONGESTION_THRESHOLD = 0.9
+
+@lru_cache(maxsize=3)
+def load_traffic_data(city: str) -> dict:
+  city_dir = TRAFFIC_DIR / TRAFFIC_DIRS[city]
+
+  with open(city_dir / "data_0.pickle", "rb") as f:
+    data = pickle.load(f)
+
+  coords = {}
+  with open(city_dir / "modified_coord.csv", newline="", encoding="utf-8-sig") as f:
+    for row in csv.DictReader(f):
+      coords[int(row["id"])] = (float(row["lat"]), float(row["lon"]))
+
+  return {"data": data, "coords": coords}
+
+@lru_cache(maxsize=3)
+def load_traffic_network(city: str) -> dict:
+  loaded = load_traffic_data(city)
+  data = loaded["data"]
+  coords = loaded["coords"]
+
+  pairs = {}
+  for (u, v), ratio in data["ratio"].items():
+    key = tuple(sorted((u, v)))
+    direction = {
+      "from": u + 1,
+      "to": v + 1,
+      "flow": round(float(data["flow"][(u, v)]), 4),
+      "capacity": round(float(data["capacity"][(u, v)]), 4),
+      "ratio": round(float(ratio), 4),
+      "t0": round(float(data["t0"][(u, v)]), 4),
+    }
+    if key not in pairs:
+      pairs[key] = {"source": key[0] + 1, "target": key[1] + 1, "ratio": 0.0, "directions": []}
+    pairs[key]["directions"].append(direction)
+    pairs[key]["ratio"] = max(pairs[key]["ratio"], direction["ratio"])
+
+  links = list(pairs.values())
+  nodes = [{"id": node_id, "lat": lat, "lon": lon} for node_id, (lat, lon) in sorted(coords.items())]
+
+  return {
+    "city": city,
+    "n_node": len(nodes),
+    "n_link": len(links),
+    "n_directed_link": len(data["ratio"]),
+    "total_demand": round(float(data["demand_matrix"].sum()), 2),
+    "total_time": round(float(data["T"]), 2),
+    "congested": sum(1 for link in links if link["ratio"] > CONGESTION_THRESHOLD),
+    "max_ratio": round(max(link["ratio"] for link in links), 4),
+    "nodes": nodes,
+    "links": links,
+  }
+
+@app.get("/api/traffic/{city}")
+async def fetch_traffic(city: TrafficCity):
+  return load_traffic_network(city)
+
+@app.get("/api/traffic/{city}/demand/{node_id}")
+async def fetch_traffic_demand(city: TrafficCity, node_id: int):
+  data = load_traffic_data(city)["data"]
+  matrix = data["demand_matrix"]
+  n = matrix.shape[0]
+  if node_id < 1 or node_id > n:
+    raise HTTPException(status_code=404, detail="Unknown node")
+
+  row = matrix[node_id - 1]
+  destinations = [
+    {"node": j + 1, "demand": round(float(d), 2)}
+    for j, d in enumerate(row)
+    if d > 0 and j != node_id - 1
+  ]
+
+  return {
+    "city": city,
+    "origin": node_id,
+    "total": round(float(sum(entry["demand"] for entry in destinations)), 2),
+    "max": round(float(max((entry["demand"] for entry in destinations), default=0)), 2),
+    "destinations": destinations,
+  }
 
 @app.get("/")
 async def root():

@@ -14,7 +14,7 @@ const STUDIES: Study[] = [
   {
     href: "/seismic",
     title: "Seismic Reliability",
-    blurb: "Post-earthquake connectivity of highway bridge networks — which locations stay reachable after a quake.",
+    blurb: "Post-earthquake connectivity of highway bridge networks.",
     paper: "Graph Neural Network Surrogate for Seismic Reliability Analysis of Highway Bridge Systems",
     paperUrl: "https://arxiv.org/abs/2210.06404",
     status: "available",
@@ -33,7 +33,7 @@ const STUDIES: Study[] = [
     blurb: "Predicting traffic flow across road networks with a heterogeneous graph neural network.",
     paper: "End-to-End Heterogeneous Graph Neural Networks for Traffic Assignment",
     paperUrl: "https://arxiv.org/abs/2310.13193",
-    status: "soon",
+    status: "available",
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <path d="M4 20c0-8 5-12 5-16" />
@@ -68,12 +68,7 @@ function StudyCard({ study }: { study: Study }) {
 
       <div className="mt-5 border-t border-slate-900/[0.05] pt-4">
         {study.paperUrl ? (
-          <a
-            href={study.paperUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="relative z-10 inline-flex w-fit items-start gap-1.5 text-xs leading-relaxed text-slate-400 transition-colors hover:text-teal-700"
-          >
+          <a href={study.paperUrl} target="_blank" rel="noopener noreferrer" className="relative z-10 inline-flex w-fit items-start gap-1.5 text-xs leading-relaxed text-slate-400 transition-colors hover:text-teal-700">
             <span>{study.paper}</span>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="mt-0.5 shrink-0">
               <path d="M7 17L17 7M7 7h10v10" />
@@ -104,11 +99,7 @@ function StudyCard({ study }: { study: Study }) {
         )}
       </span>
 
-      <Link
-        href={study.href}
-        aria-label={`Open ${study.title}`}
-        className="absolute inset-0 rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50"
-      />
+      <Link href={study.href} aria-label={`Open ${study.title}`} className="absolute inset-0 rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50" />
     </div>
   );
 }
