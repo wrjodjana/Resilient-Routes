@@ -12,6 +12,10 @@ app = FastAPI()
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 ALLOWED_ORIGINS = [origin.strip() for origin in os.getenv("ALLOWED_ORIGINS", "").split(",") if origin.strip()]
+ALLOWED_ORIGIN_REGEX = os.getenv(
+  "ALLOWED_ORIGIN_REGEX",
+  r"https://([a-z0-9-]+\.)*resilient-routes\.xyz|https://[a-z0-9-]+\.vercel\.app",
+)
 
 app.add_middleware(
   CORSMiddleware,
@@ -21,6 +25,7 @@ app.add_middleware(
     FRONTEND_URL,
     *ALLOWED_ORIGINS
   ],
+  allow_origin_regex=ALLOWED_ORIGIN_REGEX,
   allow_credentials=True,
   allow_methods=["*"],
   allow_headers=["*"],

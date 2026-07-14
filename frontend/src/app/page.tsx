@@ -53,14 +53,6 @@ function StudyCard({ study }: { study: Study }) {
     >
       <div className="flex items-start justify-between">
         <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-teal-50 text-teal-700">{study.icon}</span>
-        {available ? (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-teal-50 px-2.5 py-1 text-[11px] font-semibold text-teal-700">
-            <span className="h-1.5 w-1.5 rounded-full bg-teal-500" />
-            Available
-          </span>
-        ) : (
-          <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-500">Coming soon</span>
-        )}
       </div>
 
       <h2 className="mt-5 text-lg font-semibold tracking-tight text-slate-900">{study.title}</h2>
@@ -106,8 +98,8 @@ function StudyCard({ study }: { study: Study }) {
 
 export default function Landing() {
   return (
-    <main className="min-h-screen w-full bg-slate-50 text-slate-800">
-      <div className="mx-auto flex min-h-screen w-full max-w-3xl flex-col justify-center px-6 py-16">
+    <main className="flex min-h-screen w-full flex-col bg-slate-50 text-slate-800">
+      <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center px-6 pt-16 pb-8">
         <h1 className="mt-8 text-3xl font-semibold leading-tight tracking-tight text-slate-900 text-balance sm:text-4xl">Graph neural network surrogates for transportation resilience</h1>
         <p className="mt-3 max-w-xl text-base leading-relaxed text-slate-500 text-pretty">
           Interactive surrogates that model how transportation networks hold up under stress — from seismic damage to traffic demand. Choose a study to explore.
@@ -120,6 +112,21 @@ export default function Landing() {
           ))}
         </div>
       </div>
+
+      <footer className="mx-auto w-full max-w-3xl px-6 pb-8 text-[13px] text-slate-500">
+        A project of the{" "}
+        <a
+          href="https://uq.cee.illinois.edu/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 font-medium text-slate-700 underline decoration-slate-300 underline-offset-2 transition-colors hover:text-teal-700 hover:decoration-teal-400"
+        >
+          Uncertainty Quantification Group, University of Illinois
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M7 17L17 7M7 7h10v10" />
+          </svg>
+        </a>
+      </footer>
     </main>
   );
 }
