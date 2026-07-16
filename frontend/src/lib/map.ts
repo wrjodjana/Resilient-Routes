@@ -1,10 +1,18 @@
 import type { Map as LeafletMap, LayerGroup, default as Leaflet } from "leaflet";
-import { GraphResponse, TrafficDemandResponse, TrafficMetric, TrafficNetworkResponse } from "./types";
+import {
+  GraphResponse,
+  TrafficDemandResponse,
+  TrafficMetric,
+  TrafficNetworkResponse,
+  TrainingDisplay,
+  TrainingResult,
+} from "./types";
 
 type LeafletModule = typeof Leaflet;
 
 const EDGE_COLOR = "rgba(71, 85, 105, 0.35)";
 const DEST_COLOR = "#4f46e5";
+const SELECT_COLOR = "#0d9488";
 
 const RISK_LOW = [220, 38, 38];
 const RISK_MID = [245, 158, 11];
@@ -98,6 +106,144 @@ export async function renderGraph(map: LeafletMap, layerGroup: LayerGroup, graph
   }
 
   const bounds = L.latLngBounds(graph.nodes.map((node) => [node.lat, node.lon]));
+  map.fitBounds(bounds, { padding: [30, 30] });
+}
+
+export function failureToColor(p: number): string {
+  const v = Math.min(1, Math.max(0, p));
+  if (v < 0.5) return mix(RISK_HIGH, RISK_MID, v / 0.5);
+  return mix(RISK_MID, RISK_LOW, (v - 0.5) / 0.5);
+}
+
+export async function renderTrainingSelection(
+  map: LeafletMap,
+  layerGroup: LayerGroup,
+  graph: GraphResponse,
+  onNodeClick: (id: number) => void,
+  selectedId: number | null
+) {
+  const L = await getLeaflet();
+  if (!L) return;
+
+  layerGroup.clearLayers();
+
+  const nodeById = new Map(graph.nodes.map((node) => [node.id, node]));
+
+  for (const edge of graph.edges) {
+    const source = nodeById.get(edge.source);
+    const target = nodeById.get(edge.target);
+    if (!source || !target) continue;
+
+    L.polyline(
+      [
+        [source.lat, source.lon],
+        [target.lat, target.lon],
+      ],
+      { color: EDGE_COLOR, weight: 1.5, opacity: 0.9 }
+    ).addTo(layerGroup);
+  }
+
+  for (const node of graph.nodes) {
+    if (node.id === selectedId) {
+      L.circleMarker([node.lat, node.lon], {
+        radius: 12,
+        color: SELECT_COLOR,
+        weight: 2.5,
+        opacity: 0.85,
+        fill: false,
+        dashArray: "4 3",
+      }).addTo(layerGroup);
+    }
+
+    const marker = L.circleMarker([node.lat, node.lon], {
+      radius: node.id === selectedId ? 6.5 : 5.5,
+      color: "#ffffff",
+      weight: 1.5,
+      fillColor: node.id === selectedId ? SELECT_COLOR : "#64748b",
+      fillOpacity: 0.9,
+    }).addTo(layerGroup);
+
+    marker.bindTooltip(
+      node.id === selectedId ? `Node ${node.id} · destination` : `Node ${node.id} · click to set destination`
+    );
+    marker.on("click", () => onNodeClick(node.id));
+  }
+
+  const bounds = L.latLngBounds(graph.nodes.map((node) => [node.lat, node.lon]));
+  map.fitBounds(bounds, { padding: [30, 30] });
+}
+
+export async function renderTrainingResult(
+  map: LeafletMap,
+  layerGroup: LayerGroup,
+  result: TrainingResult,
+  display: TrainingDisplay
+) {
+  const L = await getLeaflet();
+  if (!L) return;
+
+  layerGroup.clearLayers();
+
+  const showNodes = display !== "links";
+  const showLinks = display !== "nodes";
+
+  const nodeById = new Map(result.nodes.map((node) => [node.id, node]));
+
+  for (const edge of result.edges) {
+    const source = nodeById.get(edge.source);
+    const target = nodeById.get(edge.target);
+    if (!source || !target) continue;
+
+    const line = L.polyline(
+      [
+        [source.lat, source.lon],
+        [target.lat, target.lon],
+      ],
+      showLinks
+        ? { color: failureToColor(edge.failure), weight: 2 + 2.5 * edge.failure, opacity: 0.9 }
+        : { color: EDGE_COLOR, weight: 1.5, opacity: 0.9 }
+    ).addTo(layerGroup);
+
+    line.bindPopup(
+      `<b>Link ${edge.source} – ${edge.target}</b><br/>Failure probability: <b>${edge.failure.toFixed(3)}</b>`
+    );
+  }
+
+  for (const node of result.nodes) {
+    if (node.is_target) {
+      L.circleMarker([node.lat, node.lon], {
+        radius: 13,
+        color: SELECT_COLOR,
+        weight: 1.5,
+        opacity: 0.55,
+        fill: false,
+      }).addTo(layerGroup);
+    }
+
+    const marker = L.circleMarker([node.lat, node.lon], {
+      radius: node.is_target ? 8 : showNodes ? 6 : 3.5,
+      color: "#ffffff",
+      weight: node.is_target ? 2.5 : 1.5,
+      fillColor: node.is_target
+        ? SELECT_COLOR
+        : showNodes
+          ? valueToColor(node.predicted, result.threshold)
+          : "#94a3b8",
+      fillOpacity: 0.95,
+    }).addTo(layerGroup);
+
+    marker.bindPopup(
+      `<b>${node.is_target ? "Trained destination" : `Node ${node.id}`}</b><br/>` +
+        (node.is_target
+          ? ""
+          : `Predicted connectivity: <b>${node.predicted.toFixed(3)}</b><br/>` +
+            `Simulated connectivity: <b>${node.actual.toFixed(3)}</b><br/>` +
+            `Error: <b>${Math.abs(node.predicted - node.actual).toFixed(3)}</b><br/>`) +
+        `Lat ${node.lat.toFixed(5)}, Lon ${node.lon.toFixed(5)}`
+    );
+  }
+
+  const bounds = L.latLngBounds(result.nodes.map((node) => [node.lat, node.lon]));
   map.fitBounds(bounds, { padding: [30, 30] });
 }
 

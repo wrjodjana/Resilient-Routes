@@ -7,6 +7,12 @@ from typing import Literal
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, Field
+
+try:
+  import training
+except Exception:
+  training = None
 
 app = FastAPI()
 
@@ -81,11 +87,46 @@ def load_graph(size: str) -> dict:
 async def fetch_graph(size: GraphSize):
   return load_graph(size)
 
+EarthquakeType = Literal["minor", "moderate", "major"]
+
+class TrainRequest(BaseModel):
+  size: GraphSize = "small"
+  target_node_id: int = Field(ge=0)
+  earthquake_type: EarthquakeType
+
+@app.post("/api/seismic/train")
+async def start_training(request: TrainRequest):
+  if training is None:
+    raise HTTPException(status_code=503, detail="Training is not available in this environment")
+  if request.target_node_id >= training.N_NODES[request.size]:
+    raise HTTPException(status_code=422, detail="Unknown target node for this network size")
+  job = training.start_job(request.size, request.target_node_id, request.earthquake_type)
+  if job is None:
+    raise HTTPException(status_code=409, detail="A training job is already running")
+  return job.to_dict()
+
+@app.get("/api/seismic/train/{job_id}")
+async def fetch_training_job(job_id: str):
+  if training is None:
+    raise HTTPException(status_code=503, detail="Training is not available in this environment")
+  job = training.get_job(job_id)
+  if job is None:
+    raise HTTPException(status_code=404, detail="Unknown job")
+  return job.to_dict()
+
 TRAFFIC_DIR = Path(__file__).parent / "traffic"
 
 TrafficCity = Literal["anaheim", "siouxfalls"]
 
+TrafficSeverity = Literal["baseline", "minor", "moderate", "major"]
+
 TRAFFIC_DIRS = {"anaheim": "sta_anaheim", "siouxfalls": "sta_siouxfalls"}
+
+TRAFFIC_SCENARIO_CITIES = {"anaheim": "ANAHEIM", "siouxfalls": "Sioux"}
+
+TRAFFIC_SCENARIO_SAMPLES = {"anaheim": 0, "siouxfalls": 1}
+
+TRAFFIC_MISSING_SCENARIOS = {("anaheim", "major")}
 
 CONGESTION_THRESHOLD = 0.9
 
@@ -103,11 +144,19 @@ def load_traffic_data(city: str) -> dict:
 
   return {"data": data, "coords": coords}
 
-@lru_cache(maxsize=3)
-def load_traffic_network(city: str) -> dict:
-  loaded = load_traffic_data(city)
-  data = loaded["data"]
-  coords = loaded["coords"]
+@lru_cache(maxsize=8)
+def load_traffic_scenario_data(city: str, severity: str) -> dict:
+  if severity == "baseline":
+    return load_traffic_data(city)["data"]
+
+  scenario_dir = TRAFFIC_DIR / "sta_dataset" / f"data_{TRAFFIC_SCENARIO_CITIES[city]}_{severity}_00"
+  with open(scenario_dir / f"data_{TRAFFIC_SCENARIO_SAMPLES[city]}.pickle", "rb") as f:
+    return pickle.load(f)
+
+@lru_cache(maxsize=8)
+def load_traffic_network(city: str, severity: str) -> dict:
+  data = load_traffic_scenario_data(city, severity)
+  coords = load_traffic_data(city)["coords"]
 
   pairs = {}
   for (u, v), ratio in data["ratio"].items():
@@ -130,6 +179,7 @@ def load_traffic_network(city: str) -> dict:
 
   return {
     "city": city,
+    "severity": severity,
     "n_node": len(nodes),
     "n_link": len(links),
     "n_directed_link": len(data["ratio"]),
@@ -143,7 +193,13 @@ def load_traffic_network(city: str) -> dict:
 
 @app.get("/api/traffic/{city}")
 async def fetch_traffic(city: TrafficCity):
-  return load_traffic_network(city)
+  return load_traffic_network(city, "baseline")
+
+@app.get("/api/traffic/{city}/scenario/{severity}")
+async def fetch_traffic_scenario(city: TrafficCity, severity: TrafficSeverity):
+  if (city, severity) in TRAFFIC_MISSING_SCENARIOS:
+    raise HTTPException(status_code=404, detail="No scenario data for this city and severity")
+  return load_traffic_network(city, severity)
 
 @app.get("/api/traffic/{city}/demand/{node_id}")
 async def fetch_traffic_demand(city: TrafficCity, node_id: int):

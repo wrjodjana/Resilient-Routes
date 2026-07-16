@@ -6,10 +6,11 @@ import type { Map as LeafletMap, LayerGroup } from "leaflet";
 import Sidebar from "./sidebar";
 import { fetchTrafficDemand, fetchTrafficNetwork } from "@/lib/api";
 import { getLeaflet, initMap, renderTrafficDemand, renderTrafficNetwork } from "@/lib/map";
-import { TrafficCity, TrafficDemandResponse, TrafficMetric, TrafficMode, TrafficNetworkResponse } from "@/lib/types";
+import { TrafficCity, TrafficDemandResponse, TrafficMetric, TrafficMode, TrafficNetworkResponse, TrafficSeverity } from "@/lib/types";
 
 export default function Traffic() {
   const [city, setCity] = useState<TrafficCity>("anaheim");
+  const [severity, setSeverity] = useState<TrafficSeverity>("baseline");
   const [mode, setMode] = useState<TrafficMode>("network");
   const [metric, setMetric] = useState<TrafficMetric>("ratio");
   const [network, setNetwork] = useState<TrafficNetworkResponse | null>(null);
@@ -17,7 +18,7 @@ export default function Traffic() {
   const [demand, setDemand] = useState<TrafficDemandResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [mapReady, setMapReady] = useState(false);
-  const loading = !error && network?.city !== city;
+  const loading = !error && (network?.city !== city || network?.severity !== severity);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<LeafletMap | null>(null);
@@ -57,7 +58,7 @@ export default function Traffic() {
   useEffect(() => {
     let cancelled = false;
 
-    fetchTrafficNetwork(city)
+    fetchTrafficNetwork(city, severity)
       .then((data) => {
         if (!cancelled) setNetwork(data);
       })
@@ -68,7 +69,7 @@ export default function Traffic() {
     return () => {
       cancelled = true;
     };
-  }, [city]);
+  }, [city, severity]);
 
   useEffect(() => {
     if (mode !== "od" || origin === null || demand?.origin === origin) return;
@@ -91,7 +92,13 @@ export default function Traffic() {
     setError(null);
     setOrigin(null);
     setDemand(null);
+    if (next === "anaheim" && severity === "major") setSeverity("baseline");
     setCity(next);
+  };
+
+  const handleSeverityChange = (next: TrafficSeverity) => {
+    setError(null);
+    setSeverity(next);
   };
 
   const handleModeChange = (next: TrafficMode) => {
@@ -105,7 +112,7 @@ export default function Traffic() {
   };
 
   useEffect(() => {
-    if (!network || network.city !== city || !mapReady || !mapRef.current || !layerGroupRef.current) return;
+    if (!network || network.city !== city || network.severity !== severity || !mapReady || !mapRef.current || !layerGroupRef.current) return;
 
     const handleClick = (id: number) => onNodeClickRef.current(id);
     const fit = lastFittedCityRef.current !== network.city;
@@ -116,7 +123,7 @@ export default function Traffic() {
     } else {
       renderTrafficDemand(mapRef.current, layerGroupRef.current, network, demand?.city === city ? demand : null, handleClick, fit);
     }
-  }, [network, city, mode, metric, demand, mapReady]);
+  }, [network, city, severity, mode, metric, demand, mapReady]);
 
   return (
     <main className="relative h-screen w-screen overflow-hidden bg-slate-50">
@@ -125,6 +132,7 @@ export default function Traffic() {
         <div className="pointer-events-auto w-72">
           <Sidebar
             city={city}
+            severity={severity}
             mode={mode}
             metric={metric}
             network={network}
@@ -133,6 +141,7 @@ export default function Traffic() {
             loading={loading}
             error={error}
             onCityChange={handleCityChange}
+            onSeverityChange={handleSeverityChange}
             onModeChange={handleModeChange}
             onMetricChange={setMetric}
             onOriginChange={handleOriginChange}

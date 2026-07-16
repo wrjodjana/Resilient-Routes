@@ -2,11 +2,25 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { TrafficCity, TrafficDemandResponse, TrafficMetric, TrafficMode, TrafficNetworkResponse } from "@/lib/types";
+import {
+  TrafficCity,
+  TrafficDemandResponse,
+  TrafficMetric,
+  TrafficMode,
+  TrafficNetworkResponse,
+  TrafficSeverity,
+} from "@/lib/types";
 
 const CITIES: { value: TrafficCity; label: string }[] = [
   { value: "anaheim", label: "Anaheim" },
   { value: "siouxfalls", label: "Sioux Falls" },
+];
+
+const SEVERITIES: { value: TrafficSeverity; label: string }[] = [
+  { value: "baseline", label: "Baseline" },
+  { value: "minor", label: "Minor" },
+  { value: "moderate", label: "Moderate" },
+  { value: "major", label: "Major" },
 ];
 
 const MODES: { value: TrafficMode; label: string }[] = [
@@ -22,6 +36,7 @@ const METRICS: { value: TrafficMetric; label: string }[] = [
 
 interface SidebarProps {
   city: TrafficCity;
+  severity: TrafficSeverity;
   mode: TrafficMode;
   metric: TrafficMetric;
   network: TrafficNetworkResponse | null;
@@ -30,6 +45,7 @@ interface SidebarProps {
   loading: boolean;
   error: string | null;
   onCityChange: (city: TrafficCity) => void;
+  onSeverityChange: (severity: TrafficSeverity) => void;
   onModeChange: (mode: TrafficMode) => void;
   onMetricChange: (metric: TrafficMetric) => void;
   onOriginChange: (origin: number) => void;
@@ -44,7 +60,7 @@ function Fact({ label, value }: { label: string; value: string }) {
   );
 }
 
-export default function Sidebar({ city, mode, metric, network, demand, origin, loading, error, onCityChange, onModeChange, onMetricChange, onOriginChange }: SidebarProps) {
+export default function Sidebar({ city, severity, mode, metric, network, demand, origin, loading, error, onCityChange, onSeverityChange, onModeChange, onMetricChange, onOriginChange }: SidebarProps) {
   const [originInput, setOriginInput] = useState("");
 
   useEffect(() => {
@@ -115,6 +131,26 @@ export default function Sidebar({ city, mode, metric, network, demand, origin, l
       {network && !loading && mode === "network" && (
         <>
           <div className="flex flex-col gap-1.5">
+            <h2 className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Disruption scenario</h2>
+            <div className="flex gap-1 rounded-xl bg-slate-100 p-1">
+              {SEVERITIES.map((option) => {
+                const unavailable = city === "anaheim" && option.value === "major";
+                return (
+                  <button
+                    key={option.value}
+                    onClick={() => onSeverityChange(option.value)}
+                    disabled={unavailable}
+                    title={unavailable ? "No major scenario data for Anaheim" : undefined}
+                    className={`flex-1 rounded-lg px-1 py-1.5 text-[10.5px] font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${severity === option.value ? "bg-white text-teal-700 shadow-[0_1px_2px_rgba(15,23,42,0.1)]" : "text-slate-500 hover:text-slate-700"}`}
+                  >
+                    {option.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
             <h2 className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Edge metric</h2>
             <div className="flex gap-1 rounded-xl bg-slate-100 p-1">
               {METRICS.map((option) => (
@@ -136,6 +172,11 @@ export default function Sidebar({ city, mode, metric, network, demand, origin, l
             </div>
             <p className="mt-1.5 text-[11px] leading-snug text-slate-500">
               road links run above <span className="font-semibold text-slate-700">90%</span> of capacity at equilibrium
+              {severity !== "baseline" && (
+                <>
+                  {" "}under a <span className="font-semibold text-slate-700">{severity}</span> disruption
+                </>
+              )}
             </p>
           </div>
 
@@ -144,6 +185,8 @@ export default function Sidebar({ city, mode, metric, network, demand, origin, l
             <Fact label="Links" value={String(network.n_link)} />
             <Fact label="Trips" value={Math.round(network.total_demand).toLocaleString()} />
             <Fact label="Max V/C" value={network.max_ratio.toFixed(2)} />
+            <Fact label="Total time" value={Math.round(network.total_time).toLocaleString()} />
+            <Fact label="Scenario" value={severity} />
           </div>
 
           {metric === "ratio" ? (

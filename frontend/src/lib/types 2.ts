@@ -24,13 +24,9 @@ export interface GraphResponse {
   edges: GraphEdge[];
 }
 
-export type SeismicMode = "precomputed" | "train";
-
 export type EarthquakeType = "minor" | "moderate" | "major";
 
 export type TrainingStatus = "running" | "completed" | "failed";
-
-export type TrainingDisplay = "both" | "nodes" | "links";
 
 export interface TrainingNode {
   id: number;
@@ -41,23 +37,15 @@ export interface TrainingNode {
   is_target: boolean;
 }
 
-export interface TrainingEdge {
-  source: number;
-  target: number;
-  failure: number;
-}
-
 export interface TrainingResult {
   mae: number;
   threshold: number;
   nodes: TrainingNode[];
-  edges: TrainingEdge[];
 }
 
 export interface TrainingJobResponse {
   job_id: string;
   status: TrainingStatus;
-  size: GraphSize;
   target_node_id: number;
   earthquake_type: EarthquakeType;
   epoch: number;
@@ -69,8 +57,6 @@ export interface TrainingJobResponse {
 }
 
 export type TrafficCity = "anaheim" | "siouxfalls";
-
-export type TrafficSeverity = "baseline" | "minor" | "moderate" | "major";
 
 export type TrafficMode = "network" | "od";
 
@@ -100,7 +86,6 @@ export interface TrafficLink {
 
 export interface TrafficNetworkResponse {
   city: TrafficCity;
-  severity: TrafficSeverity;
   n_node: number;
   n_link: number;
   n_directed_link: number;
