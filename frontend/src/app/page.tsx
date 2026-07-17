@@ -101,9 +101,7 @@ export default function Landing() {
     <main className="flex min-h-screen w-full flex-col bg-slate-50 text-slate-800">
       <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center px-6 pt-16 pb-8">
         <h1 className="mt-8 text-3xl font-semibold leading-tight tracking-tight text-slate-900 text-balance sm:text-4xl">Graph neural network surrogates for transportation resilience</h1>
-        <p className="mt-3 max-w-xl text-base leading-relaxed text-slate-500 text-pretty">
-          Interactive surrogates that model how transportation networks hold up under stress — from seismic damage to traffic demand. Choose a study to explore.
-        </p>
+        <p className="mt-3 max-w-xl text-base leading-relaxed text-slate-500 text-pretty">Interactive surrogates that model how transportation networks hold up under stress. Choose a study to explore.</p>
 
         <h2 className="mt-12 mb-4 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Studies</h2>
         <div className="grid gap-4 sm:grid-cols-2">

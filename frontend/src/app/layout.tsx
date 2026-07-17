@@ -3,7 +3,7 @@ import "leaflet/dist/leaflet.css";
 import "../styles/globals.css";
 
 export const metadata: Metadata = {
-  title: "Resilient Routes — post-earthquake connectivity",
+  title: "Resilient Routes",
   description: "Seismic reliability of transportation networks: which locations stay connected to the critical destination after an earthquake.",
 };
 
